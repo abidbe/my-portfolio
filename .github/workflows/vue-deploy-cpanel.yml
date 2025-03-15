@@ -11,27 +11,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Setup Node.js
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: "18"
-
-      # Cache Node modules
-      - name: Cache Node modules
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-
-      # Clear NPM cache and remove lock files (optional, uncomment if needed)
-      # - name: Clear NPM cache and remove lock files
-      #   run: |
-      #     rm -rf node_modules
-      #     rm -f package-lock.json
-      #     npm cache clean --force
+          cache: "npm"
 
       # Install Dependencies
       - name: Install Dependencies
@@ -43,7 +30,7 @@ jobs:
 
       # Deploy to cPanel
       - name: Deploy to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_HOST }}
           username: ${{ secrets.CPANEL_USERNAME }}
