@@ -168,6 +168,7 @@ const handleSubmit = async () => {
     formSubmitData.append("subject", formData.subject);
     formSubmitData.append("message", formData.message);
     formSubmitData.append("_captcha", "false");
+    formSubmitData.append("_next", "https://abidbe.com");
 
     // Submit data to FormSubmit - ganti dengan email Anda
     await fetch("https://formsubmit.co/abidbe.123@gmail.com", {
