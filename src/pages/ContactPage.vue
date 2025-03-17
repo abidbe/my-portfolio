@@ -87,6 +87,7 @@
             </button>
 
             <div v-if="formSuccess" class="success-message">Thank you! Your message has been sent successfully.</div>
+            <div v-if="formError" class="error-message-box">{{ formError }}</div>
           </form>
         </div>
       </div>
@@ -114,6 +115,7 @@ const formData = reactive({
 // Form state
 const formErrors = reactive({});
 const formSuccess = ref(false);
+const formError = ref('');
 const isSubmitting = ref(false);
 
 // Validate form
@@ -145,8 +147,10 @@ const validateForm = () => {
 
 // Handle form submission
 const handleSubmit = async () => {
-  // Reset errors
+  // Reset errors and success messages
   Object.keys(formErrors).forEach((key) => delete formErrors[key]);
+  formSuccess.value = false;
+  formError.value = '';
 
   // Validate form
   const errors = validateForm();
@@ -169,38 +173,44 @@ const handleSubmit = async () => {
     formSubmitData.append("message", formData.message);
     formSubmitData.append("_captcha", "false");
     formSubmitData.append("_next", "https://abidbe.com");
+    formSubmitData.append("_template", "table");
 
-    // Submit data to FormSubmit - ganti dengan email Anda
-    await fetch("https://formsubmit.co/abidbe.123@gmail.com", {
+    // Submit data to FormSubmit
+    const response = await fetch("https://formsubmit.co/abidbe.123@gmail.com", {
       method: "POST",
       body: formSubmitData,
-      headers: {
-        Accept: "application/json",
-      },
+      // Note: We can't check JSON response due to the redirect
     });
 
-    // Reset form
-    formData.name = "";
-    formData.email = "";
-    formData.subject = "";
-    formData.message = "";
+    // Check if form was submitted properly
+    if (response.ok || response.status === 302) {
+      // Reset form
+      formData.name = "";
+      formData.email = "";
+      formData.subject = "";
+      formData.message = "";
 
-    // Show success message
-    formSuccess.value = true;
+      // Show success message
+      formSuccess.value = true;
 
-    // Reset submitting state
-    isSubmitting.value = false;
-
-    // Hide success message after 5 seconds
-    setTimeout(() => {
-      formSuccess.value = false;
-    }, 5000);
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        formSuccess.value = false;
+      }, 5000);
+    } else {
+      // Show error message if not successful
+      formError.value = "Failed to send your message. Please try again later.";
+      console.error("Form submission failed:", response.status);
+    }
   } catch (error) {
     console.error("Error sending email:", error);
+    formError.value = "An error occurred while sending your message. Please try again later.";
+  } finally {
+    // Reset submitting state regardless of outcome
     isSubmitting.value = false;
-    // Opsional: tambahkan penanganan error disini
   }
 };
+
 onMounted(() => {
   initAnimations();
 });
@@ -427,6 +437,15 @@ onMounted(() => {
     border-left: 3px solid #27ae60;
     border-radius: 3px;
     color: #2ecc71;
+  }
+
+  .error-message-box {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(231, 76, 60, 0.1);
+    border-left: 3px solid #e74c3c;
+    border-radius: 3px;
+    color: #e74c3c;
   }
 }
 </style>
