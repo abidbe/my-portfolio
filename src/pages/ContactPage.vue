@@ -104,6 +104,22 @@ const dataStore = useDataStore();
 const { contact } = dataStore;
 const { initAnimations } = useScrollAnimation();
 
+// Check if returning from form submission
+onMounted(() => {
+  initAnimations();
+  
+  if (localStorage.getItem('formSubmitted') === 'true') {
+    // Clear the flag
+    localStorage.removeItem('formSubmitted');
+    // Show success message
+    formSuccess.value = true;
+    // Hide success message after 5 seconds
+    setTimeout(() => {
+      formSuccess.value = false;
+    }, 5000);
+  }
+});
+
 // Form data
 const formData = reactive({
   name: "",
@@ -175,45 +191,53 @@ const handleSubmit = async () => {
     formSubmitData.append("_next", "https://abidbe.com");
     formSubmitData.append("_template", "table");
 
-    // Submit data to FormSubmit
-    const response = await fetch("https://formsubmit.co/abidbe.123@gmail.com", {
-      method: "POST",
-      body: formSubmitData,
-      // Note: We can't check JSON response due to the redirect
-    });
-
-    // Check if form was submitted properly
-    if (response.ok || response.status === 302) {
-      // Reset form
-      formData.name = "";
-      formData.email = "";
-      formData.subject = "";
-      formData.message = "";
-
-      // Show success message
-      formSuccess.value = true;
-
-      // Hide success message after 5 seconds
-      setTimeout(() => {
-        formSuccess.value = false;
-      }, 5000);
-    } else {
-      // Show error message if not successful
-      formError.value = "Failed to send your message. Please try again later.";
-      console.error("Form submission failed:", response.status);
+    // Submit data to FormSubmit using form redirect method, not fetch
+    // Create form element
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://formsubmit.co/abidbe.123@gmail.com';
+    form.style.display = 'none';
+    
+    // Add all form data as hidden inputs
+    for (const pair of formSubmitData.entries()) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = pair[0];
+      input.value = pair[1];
+      form.appendChild(input);
     }
+    
+    // Add to document, submit, and remove
+    document.body.appendChild(form);
+    
+    // Set a flag in localStorage before submitting
+    localStorage.setItem('formSubmitted', 'true');
+    
+    // Submit the form and let it redirect
+    form.submit();
+    
+    // With the redirect approach, this code won't typically run
+    // But we'll keep it as a fallback for testing or if redirect is blocked
+    
+    // Reset form
+    formData.name = "";
+    formData.email = "";
+    formData.subject = "";
+    formData.message = "";
+
+    // Show success message
+    formSuccess.value = true;
+
+    // Hide success message after 5 seconds
+    setTimeout(() => {
+      formSuccess.value = false;
+    }, 5000);
   } catch (error) {
     console.error("Error sending email:", error);
     formError.value = "An error occurred while sending your message. Please try again later.";
-  } finally {
-    // Reset submitting state regardless of outcome
     isSubmitting.value = false;
   }
 };
-
-onMounted(() => {
-  initAnimations();
-});
 </script>
 
 <style lang="scss" scoped>
