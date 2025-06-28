@@ -22,7 +22,7 @@ export const useDataStore = defineStore("data", {
             { name: "React", rating: 7 },
             { name: "JavaScript", rating: 9 },
             { name: "TypeScript", rating: 6 },
-            { name: "HTML/CSS", rating: 10 },
+            { name: "HTML/CSS", rating: 9 },
             { name: "SCSS", rating: 9 },
             { name: "TailwindCSS", rating: 9 },
             { name: "Bootstrap", rating: 8 },
@@ -33,10 +33,10 @@ export const useDataStore = defineStore("data", {
         {
           category: "Backend",
           items: [
-            { name: "Node.js", rating: 9 },
+            { name: "Node.js", rating: 8 },
             { name: "Express", rating: 6 },
             { name: "PHP", rating: 9 },
-            { name: "Laravel", rating: 10 },
+            { name: "Laravel", rating: 9 },
             { name: "Python", rating: 9 },
             { name: "Flask", rating: 9 },
             { name: "Java", rating: 5 },
@@ -64,8 +64,8 @@ export const useDataStore = defineStore("data", {
         {
           category: "Tools",
           items: [
-            { name: "VS Code", rating: 10 },
-            { name: "Android Studio", rating: 9 },
+            { name: "VS Code", rating: 9 },
+            { name: "Android Studio", rating: 8 },
             { name: "Postman", rating: 9 },
             { name: "Figma", rating: 7 },
             { name: "JetBrains IDEs", rating: 8 },
