@@ -40,7 +40,8 @@
               <h3 class="social-title">Connect With Me</h3>
               <div class="social-icons">
                 <a v-for="social in contact.socialMedia" :key="social.name" :href="social.url" target="_blank" rel="noopener noreferrer" class="social-icon" :aria-label="social.name">
-                  <i :class="`fab fa-${social.icon}`"></i>
+                  <i :class="`fab fa-${social.icon}`" v-if="social.icon !== 'envelope'"></i>
+                  <i :class="`fas fa-${social.icon}`" v-else></i>
                 </a>
               </div>
             </div>
