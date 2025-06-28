@@ -86,6 +86,7 @@
               <span v-else>Send Message</span>
             </button>
 
+            <div v-if="formErrors.submit" class="error-message submit-error">{{ formErrors.submit }}</div>
             <div v-if="formSuccess" class="success-message">Thank you! Your message has been sent successfully.</div>
           </form>
         </div>
@@ -98,10 +99,18 @@
 import { ref, reactive, onMounted } from "vue";
 import { useDataStore } from "../stores/dataStore";
 import { useScrollAnimation } from "../composables/useScrollAnimation";
+import emailjs from "@emailjs/browser";
 
 const dataStore = useDataStore();
 const { contact } = dataStore;
 const { initAnimations } = useScrollAnimation();
+
+// EmailJS Configuration
+const EMAILJS_CONFIG = {
+  PUBLIC_KEY: "tflxuCUsbbACLhoF0", // Ganti dengan public key Anda
+  SERVICE_ID: "service_lj0yhw8", // Ganti dengan service ID Anda
+  TEMPLATE_ID: "template_do7gr98", // Ganti dengan template ID Anda
+};
 
 // Form data
 const formData = reactive({
@@ -143,7 +152,7 @@ const validateForm = () => {
   return errors;
 };
 
-// Handle form submission
+// Handle form submission with EmailJS
 const handleSubmit = async () => {
   // Reset errors
   Object.keys(formErrors).forEach((key) => delete formErrors[key]);
@@ -152,32 +161,43 @@ const handleSubmit = async () => {
   const errors = validateForm();
 
   if (Object.keys(errors).length > 0) {
-    // If there are errors, add them to formErrors
     Object.assign(formErrors, errors);
     return;
   }
 
-  // Set submitting state
   isSubmitting.value = true;
 
   try {
-    // Prepare form data for submission
-    const formSubmitData = new FormData();
-    formSubmitData.append("name", formData.name);
-    formSubmitData.append("email", formData.email);
-    formSubmitData.append("subject", formData.subject);
-    formSubmitData.append("message", formData.message);
-    formSubmitData.append("_captcha", "false");
-    formSubmitData.append("_next", "https://abidbe.com");
-
-    // Submit data to FormSubmit - ganti dengan email Anda
-    await fetch("https://formsubmit.co/abidbe.123@gmail.com", {
-      method: "POST",
-      body: formSubmitData,
-      headers: {
-        Accept: "application/json",
-      },
+    // Get current date and time
+    const now = new Date();
+    const sentDate = now.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
+    const sentTime = now.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
+
+    // Prepare template parameters for EmailJS
+    const templateParams = {
+      from_name: formData.name,
+      from_email: formData.email,
+      subject: formData.subject,
+      message: formData.message,
+      reply_to: formData.email,
+      sent_date: sentDate,
+      sent_time: sentTime,
+      to_name: "Abid Ibadurrahman",
+    };
+
+    // Send email using EmailJS
+    const response = await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParams, EMAILJS_CONFIG.PUBLIC_KEY);
+
+    console.log("Email sent successfully:", response);
 
     // Reset form
     formData.name = "";
@@ -188,19 +208,21 @@ const handleSubmit = async () => {
     // Show success message
     formSuccess.value = true;
 
-    // Reset submitting state
-    isSubmitting.value = false;
-
     // Hide success message after 5 seconds
     setTimeout(() => {
       formSuccess.value = false;
     }, 5000);
   } catch (error) {
     console.error("Error sending email:", error);
+
+    Object.assign(formErrors, {
+      submit: "Failed to send message. Please try again or contact me directly via email.",
+    });
+  } finally {
     isSubmitting.value = false;
-    // Opsional: tambahkan penanganan error disini
   }
 };
+
 onMounted(() => {
   initAnimations();
 });
@@ -418,6 +440,15 @@ onMounted(() => {
       cursor: not-allowed;
       transform: none;
     }
+  }
+
+  .submit-error {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: rgba(231, 76, 60, 0.1);
+    border-left: 3px solid #e74c3c;
+    border-radius: 3px;
+    color: #e74c3c;
   }
 
   .success-message {
